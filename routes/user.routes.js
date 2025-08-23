@@ -8,6 +8,7 @@ import {hashPasswordWithSalt, } from '../utils/hash.js'
 import {getUserByEmail} from '../services/user.service.js';
 import jwt from 'jsonwebtoken';
 const router = express.Router();
+import {createUserToken} from '../utils/token.js'
 
 router.post('/signup', async (req, res)=>{
     const validationResult = await signupPostRequestBodySchema.safeParseAsync(req.body);
@@ -69,7 +70,8 @@ return res.status(201).json({data : {userId : user[0].id}});
         return res.status(400).json({error :" Invalid password"});
     }
 
-    const token = jwt.sign({id:user.id }, process.env.JWT_SECRET);
+    const token = await createUserToken({id : user.id})
+   
 
     return res.json({token});
  })
