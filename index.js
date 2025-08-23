@@ -11,8 +11,9 @@ app.use(authenticationMiddleware);
 app.get('/', (req,res)=>{
     return res.json({status : 'Server is running'});
 })
-app.use(urlRouter);
+
 app.use('/user', userRouter);
+app.use(urlRouter);
 
 app.listen(PORT, ()=>{
     console.log(`Server is running on Port ${PORT}`);
