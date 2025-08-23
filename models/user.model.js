@@ -1,5 +1,5 @@
-import { timestamp } from "drizzle-orm/gel-core";
-import { pgTable, uuid, varchar, text } from "drizzle-orm/pg-core";
+import { pgTable, uuid, varchar, text, timestamp } from "drizzle-orm/pg-core";
+
 
 export const usersTable = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
