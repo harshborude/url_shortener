@@ -38,5 +38,7 @@ export function authenticationMiddleware(req,res,next){
 export function ensureAuthenticated(req,res,next){
 if(!req.user || !req.user.id){
     return res.status(401).json({error:"Must be loggeed in to access this resouce"});
+   
 }
+ next();
 }

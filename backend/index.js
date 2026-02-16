@@ -1,13 +1,18 @@
 import express from 'express';
+import cors from 'cors'; // <--- Import cors
 import userRouter from './routes/user.routes.js';
-import {authenticationMiddleware} from './middlewares/auth.middleware.js';
+import { authenticationMiddleware } from './middlewares/auth.middleware.js';
 import urlRouter from './routes/url.routes.js';
-const app = express();
 
+const app = express();
 const PORT = process.env.PORT ?? 8000;
 
+app.use(cors()); 
 app.use(express.json());
 app.use(authenticationMiddleware);
+
+
+
 app.get('/', (req,res)=>{
     return res.json({status : 'Server is running'});
 })
