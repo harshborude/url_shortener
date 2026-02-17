@@ -149,6 +149,12 @@ function App() {
         <div className="result">
           Your shortened url is - <br/>
           <a href={shortUrl} target="_blank" rel="noreferrer">{shortUrl}</a>
+          <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '5px', color: '#555', fontSize: '0.9rem' }}>
+            <p>
+              I understand that the URL you sent to shorten may now be longer or the same length. 
+              This is the irony of free tier subscriptions and I am a student so I only have so much money. 😅
+            </p>
+          </div>
         </div>
       )}
 
