@@ -125,7 +125,14 @@ function App() {
         <p className="toggle-link" onClick={() => setIsSignup(!isSignup)}>
           {isSignup ? 'Have an account? Login' : 'Need an account? Sign up'}
         </p>
+        <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '5px', color: '#666', fontSize: '0.85rem', textAlign: 'center' }}>
+          <p>
+            Note: This app uses a Render free tier subscription. The server may be "sleeping" 
+            and could take up to 50 seconds to wake up. Please be patient!
+          </p>
+        </div>
       </div>
+
     );
   }
 
