@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
-const API_BASE = 'http://localhost:8000'; // Your backend URL
+const API_BASE = 'https://url-shortener-6p2u.onrender.com/'; // Your backend URL
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
