@@ -2,24 +2,37 @@ import express from 'express';
 import { db } from '../db/index.js'; // <-- Corrected
 import { usersTable } from '../models/index.js'; // <-- Corrected
 // import { createHmac, randomBytes } from 'crypto';
-import { signupPostRequestBodySchema, loginPostRequestBodySchema} from '../validation/request.validation.js';
+import { signupPostRequestBodySchema, loginPostRequestBodySchema } from '../validation/request.validation.js';
 // import { eq } from 'drizzle-orm'; // <-- Add this import
-import {hashPasswordWithSalt, } from '../utils/hash.js'
-import {getUserByEmail} from '../services/user.service.js';
+import { hashPasswordWithSalt, } from '../utils/hash.js'
+import { getUserByEmail } from '../services/user.service.js';
 import jwt from 'jsonwebtoken';
 const router = express.Router();
-import {createUserToken} from '../utils/token.js'
+import { createUserToken } from '../utils/token.js'
+import { ensureAuthenticated } from '../middlewares/auth.middleware.js'
+import { eq } from 'drizzle-orm';
 
-router.post('/signup', async (req, res)=>{
+router.get('/me', ensureAuthenticated, async (req, res) => {
+    const [user] = await db
+        .select({ firstname: usersTable.firstname })
+        .from(usersTable)
+        .where(eq(usersTable.id, req.user.id));
+
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    return res.json({ firstname: user.firstname });
+});
+
+router.post('/signup', async (req, res) => {
     const validationResult = await signupPostRequestBodySchema.safeParseAsync(req.body);
 
     // if(!firstname) return res.status(400).json({error : 'first name required'});
 
-    if(validationResult.error) {
-        return res.status(400).json({error: validationResult.error.format()})
+    if (validationResult.error) {
+        return res.status(400).json({ error: validationResult.error.format() })
     }
 
-    const { firstname, lastname, email, password} = validationResult.data;
+    const { firstname, lastname, email, password } = validationResult.data;
 
     // const [existingUser] =  await db
     //                 .select({
@@ -30,50 +43,50 @@ router.post('/signup', async (req, res)=>{
 
 
     const existingUser = await getUserByEmail(email);
-        if(existingUser) return res.status(400).json({error :`User with email ${email} already exists`});
-               
-                
+    if (existingUser) return res.status(400).json({ error: `User with email ${email} already exists` });
+
+
 
     // const salt = randomBytes(256).toString('hex');
     // const hashedPassword = createHmac('sha256', salt).update(password).digest('hex');
 
-   const {salt, password: hashedPassword} = hashPasswordWithSalt(password)
+    const { salt, password: hashedPassword } = hashPasswordWithSalt(password)
 
-        const user = await db.insert(usersTable).values({
-            email,
-            firstname,
-            lastname,
-            salt,
-            password : hashedPassword,
-        }).returning({id:usersTable.id})
+    const user = await db.insert(usersTable).values({
+        email,
+        firstname,
+        lastname,
+        salt,
+        password: hashedPassword,
+    }).returning({ id: usersTable.id })
 
-return res.status(201).json({data : {userId : user[0].id}});
- });
+    return res.status(201).json({ data: { userId: user[0].id } });
+});
 
- router.post('/login', async(req,res)=>{
+router.post('/login', async (req, res) => {
     const validationResult = await loginPostRequestBodySchema.safeParseAsync(req.body)
 
-    if(validationResult.error){
-        return res.status(400).json({error : validationResult.error.format()})
+    if (validationResult.error) {
+        return res.status(400).json({ error: validationResult.error.format() })
     }
-    const {email, password} = validationResult.data;
+    const { email, password } = validationResult.data;
 
     const user = await getUserByEmail(email);
 
-    if(!user){
-        return res.status(404).json({error:`user with email ${email} does not exists`});
+    if (!user) {
+        return res.status(404).json({ error: `user with email ${email} does not exists` });
     }
 
-    const {password : hashedPassword} = hashPasswordWithSalt(password, user.salt);
+    const { password: hashedPassword } = hashPasswordWithSalt(password, user.salt);
 
-    if(user.password !== hashedPassword) {
-        return res.status(400).json({error :" Invalid password"});
+    if (user.password !== hashedPassword) {
+        return res.status(400).json({ error: " Invalid password" });
     }
 
-    const token = await createUserToken({id : user.id})
-   
+    const token = await createUserToken({ id: user.id })
 
-    return res.json({token});
- })
+
+    return res.json({ token });
+})
 
 export default router;

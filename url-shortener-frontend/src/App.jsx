@@ -16,8 +16,47 @@ function App() {
   const [firstname, setFirstname] = useState('');
   const [longUrl, setLongUrl] = useState('');
 
+  // Dashboard States
+  const [username, setUsername] = useState('');
+  const [urls, setUrls] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Clear errors when switching views
   useEffect(() => { setError(''); }, [isSignup]);
+
+  // Fetch user info and URLs when logged in
+  useEffect(() => {
+    if (token) {
+      fetchUserInfo();
+      fetchUrls();
+    }
+  }, [token]);
+
+  const fetchUserInfo = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/user/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.status === 401) { handleLogout(); return; }
+      const data = await res.json();
+      setUsername(data.firstname);
+    } catch (err) {
+      console.error('Failed to fetch user info:', err);
+    }
+  };
+
+  const fetchUrls = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/codes`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.status === 401) { handleLogout(); return; }
+      const data = await res.json();
+      setUrls(data.codes || []);
+    } catch (err) {
+      console.error('Failed to fetch URLs:', err);
+    }
+  };
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -77,8 +116,10 @@ function App() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to shorten');
 
-      // Construct the full short URL (assuming backend handles the redirect)
       setShortUrl(`${API_BASE}/${data.shortCode}`);
+      setLongUrl('');
+      // Add the new URL to the list
+      setUrls(prev => [...prev, { targetURL: longUrl, shortCode: data.shortCode }]);
     } catch (err) {
       setError(err.message);
     }
@@ -89,7 +130,16 @@ function App() {
     setToken(null);
     setShortUrl('');
     setLongUrl('');
+    setUsername('');
+    setUrls([]);
+    setSearchQuery('');
   };
+
+  // Filter URLs based on search query
+  const filteredUrls = urls.filter(u =>
+    u.targetURL.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    u.shortCode.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // --- Render Views ---
 
@@ -140,40 +190,88 @@ function App() {
           </p>
         </div>
       </div>
-
     );
   }
 
   return (
-    <div className="container">
-      <h1>URL Shortener</h1>
-      {error && <div className="error">{error}</div>}
+    <div className="dashboard-layout">
+      {/* Left Pane - Dashboard */}
+      <div className="left-pane">
+        <h1>Hello, {username || '...'} 👋</h1>
 
-      <form onSubmit={handleShorten}>
         <input
-          type="url"
-          placeholder="Paste your long URL here"
-          value={longUrl}
-          onChange={e => setLongUrl(e.target.value)}
-          required
+          type="text"
+          className="search-box"
+          placeholder="🔍 Search your URLs..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
         />
-        <button type="submit">Shorten</button>
-      </form>
 
-      {shortUrl && (
-        <div className="result">
-          Your shortened url is - <br />
-          <a href={shortUrl} target="_blank" rel="noreferrer">{shortUrl}</a>
-          <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '5px', color: '#555', fontSize: '0.9rem' }}>
-            <p>
-              I understand that the URL you sent to shorten may now be longer or the same length.
-              This is the irony of free tier subscriptions and I am a student so I only have so much money. 😅
+        <div className="table-wrapper">
+          {filteredUrls.length === 0 ? (
+            <p className="empty-state">
+              {urls.length === 0
+                ? 'No shortened URLs yet. Create one →'
+                : 'No URLs match your search.'}
             </p>
-          </div>
+          ) : (
+            <table className="url-table">
+              <thead>
+                <tr>
+                  <th>Long URL</th>
+                  <th>Short URL</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUrls.map((u, i) => (
+                  <tr key={i}>
+                    <td>
+                      <a href={u.targetURL} target="_blank" rel="noreferrer" title={u.targetURL}>
+                        {u.targetURL.length > 50
+                          ? u.targetURL.substring(0, 50) + '...'
+                          : u.targetURL}
+                      </a>
+                    </td>
+                    <td>
+                      <a href={`${API_BASE}/${u.shortCode}`} target="_blank" rel="noreferrer">
+                        {u.shortCode}
+                      </a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
-      )}
 
-      <p className="toggle-link" onClick={handleLogout}>Logout</p>
+        <p className="url-count">{urls.length} URL{urls.length !== 1 ? 's' : ''} shortened</p>
+      </div>
+
+      {/* Right Pane - Shorten Form */}
+      <div className="right-pane">
+        <h2>Shorten a URL</h2>
+        {error && <div className="error">{error}</div>}
+
+        <form onSubmit={handleShorten}>
+          <input
+            type="url"
+            placeholder="Paste your long URL here"
+            value={longUrl}
+            onChange={e => setLongUrl(e.target.value)}
+            required
+          />
+          <button type="submit">Shorten</button>
+        </form>
+
+        {shortUrl && (
+          <div className="result">
+            Your shortened URL: <br />
+            <a href={shortUrl} target="_blank" rel="noreferrer">{shortUrl}</a>
+          </div>
+        )}
+
+        <p className="toggle-link" onClick={handleLogout}>Logout</p>
+      </div>
     </div>
   );
 }
