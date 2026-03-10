@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
-const API_BASE = 'https://url-shortener-6p2u.onrender.com'; // Your backend URL
+const API_BASE = 'https://url-r9vl.onrender.com'; // Your backend URL
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -21,10 +21,10 @@ function App() {
   const handleAuth = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     const endpoint = isSignup ? '/user/signup' : '/user/login';
-    const payload = isSignup 
-      ? { email, password, firstname } 
+    const payload = isSignup
+      ? { email, password, firstname }
       : { email, password };
 
     try {
@@ -94,30 +94,30 @@ function App() {
       <div className="container">
         <h1>{isSignup ? 'Sign Up' : 'Login'}</h1>
         {error && <div className="error">{error}</div>}
-        
+
         <form onSubmit={handleAuth}>
           {isSignup && (
-            <input 
-              type="text" 
-              placeholder="First Name" 
+            <input
+              type="text"
+              placeholder="First Name"
               value={firstname}
               onChange={e => setFirstname(e.target.value)}
-              required 
+              required
             />
           )}
-          <input 
-            type="email" 
-            placeholder="Email" 
+          <input
+            type="email"
+            placeholder="Email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            required 
+            required
           />
-          <input 
-            type="password" 
-            placeholder="Password" 
+          <input
+            type="password"
+            placeholder="Password"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            required 
+            required
           />
           <button type="submit">{isSignup ? 'Sign Up' : 'Login'}</button>
         </form>
@@ -127,7 +127,7 @@ function App() {
         </p>
         <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '5px', color: '#666', fontSize: '0.85rem', textAlign: 'center' }}>
           <p>
-            Note: This app uses a Render free tier subscription. The server may be "sleeping" 
+            Note: This app uses a Render free tier subscription. The server may be "sleeping"
             and could take up to 50 seconds to wake up. Please be patient!
           </p>
         </div>
@@ -142,23 +142,23 @@ function App() {
       {error && <div className="error">{error}</div>}
 
       <form onSubmit={handleShorten}>
-        <input 
-          type="url" 
-          placeholder="Paste your long URL here" 
+        <input
+          type="url"
+          placeholder="Paste your long URL here"
           value={longUrl}
           onChange={e => setLongUrl(e.target.value)}
-          required 
+          required
         />
         <button type="submit">Shorten</button>
       </form>
 
       {shortUrl && (
         <div className="result">
-          Your shortened url is - <br/>
+          Your shortened url is - <br />
           <a href={shortUrl} target="_blank" rel="noreferrer">{shortUrl}</a>
           <div style={{ marginTop: '20px', padding: '10px', backgroundColor: '#f0f0f0', borderRadius: '5px', color: '#555', fontSize: '0.9rem' }}>
             <p>
-              I understand that the URL you sent to shorten may now be longer or the same length. 
+              I understand that the URL you sent to shorten may now be longer or the same length.
               This is the irony of free tier subscriptions and I am a student so I only have so much money. 😅
             </p>
           </div>
