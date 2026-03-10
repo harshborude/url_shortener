@@ -8,6 +8,7 @@ function App() {
   const [isSignup, setIsSignup] = useState(false);
   const [error, setError] = useState('');
   const [shortUrl, setShortUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // Form States
   const [email, setEmail] = useState('');
@@ -21,6 +22,7 @@ function App() {
   const handleAuth = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     const endpoint = isSignup ? '/user/signup' : '/user/login';
     const payload = isSignup
@@ -47,6 +49,8 @@ function App() {
       }
     } catch (err) {
       setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -119,7 +123,11 @@ function App() {
             onChange={e => setPassword(e.target.value)}
             required
           />
-          <button type="submit">{isSignup ? 'Sign Up' : 'Login'}</button>
+          <button type="submit" disabled={isLoading}>
+            {isLoading
+              ? (isSignup ? 'Registering...' : 'Logging in...')
+              : (isSignup ? 'Sign Up' : 'Login')}
+          </button>
         </form>
 
         <p className="toggle-link" onClick={() => setIsSignup(!isSignup)}>
